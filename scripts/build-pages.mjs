@@ -94,45 +94,91 @@ function buildIndexHtml() {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>MyBlog</title>
-    <meta name="description" content="一个轻量的个人博客与写作存档页。" />
+    <meta name="description" content="一册轻量的每日手账，记录写给自己的日记与想法。" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main class="page">
       <header class="hero">
-        <p class="eyebrow">MyBlog</p>
-        <h1>写给现在的自己</h1>
-        <p class="lead">这是一个从本地 Markdown 写作库自动生成的轻量页面。这里默认只展示 Posts 中的正式文章。</p>
+        <div class="hero-topline">
+          <p class="eyebrow">MyBlog</p>
+          <p class="hero-date">Daily Notes Archive</p>
+        </div>
+        <h1>给未来回看的手账封面</h1>
+        <p class="lead">每天写一点，慢慢把日子叠成一本能翻阅的册子。这里默认只展示 <code>Posts/</code> 中已经准备公开的正式日记。</p>
       </header>
-      <section>
+
+      <section class="featured-shell">
+        <div class="section-head section-head-tight">
+          <h2>最新日记</h2>
+          <span class="count" id="featured-label">封面</span>
+        </div>
+        <article id="featured-card" class="featured-card">
+          <div class="featured-paper">
+            <p id="featured-kicker" class="featured-kicker">准备开始</p>
+            <h3 id="featured-title">今天还没有公开日记</h3>
+            <p id="featured-summary" class="featured-summary">等你把一篇日记放进 Posts 目录后，这里会自动变成首页主封面。</p>
+            <div class="featured-meta">
+              <span id="featured-date">写作模式已就绪</span>
+              <a id="featured-link" class="featured-link featured-link-disabled" href="./index.html" aria-disabled="true">等待第一篇</a>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="recent-shell">
         <div class="section-head">
-          <h2>文章</h2>
+          <h2>最近几篇</h2>
           <span id="post-count" class="count">0 篇</span>
         </div>
         <div id="post-list" class="post-list"></div>
-        <div id="empty-state" class="empty" hidden>暂时还没有公开文章。你可以继续在本地写 Drafts，准备好后再放入 Posts。</div>
+        <div id="empty-state" class="empty" hidden>还没有可展示的最近日记。你可以继续在本地写 Drafts，准备好后再放入 Posts。</div>
       </section>
     </main>
     <script>
       async function main() {
         const response = await fetch('./posts.json');
         const posts = await response.json();
+        const featured = posts[0];
+        const recentPosts = posts.slice(1, 7);
         const count = document.getElementById('post-count');
         const list = document.getElementById('post-list');
         const empty = document.getElementById('empty-state');
+        const featuredLabel = document.getElementById('featured-label');
 
         count.textContent = posts.length + ' 篇';
 
-        if (!posts.length) {
+        if (!featured) {
           empty.hidden = false;
           return;
         }
 
-        list.innerHTML = posts.map((post) => \`
+        featuredLabel.textContent = '最新一篇';
+        document.getElementById('featured-kicker').textContent = 'Latest Entry';
+        document.getElementById('featured-title').textContent = featured.title;
+        document.getElementById('featured-summary').textContent = featured.summary || '这篇日记还没有填写摘要。';
+        document.getElementById('featured-date').textContent = featured.date || '未设置日期';
+        const featuredLink = document.getElementById('featured-link');
+        featuredLink.href = './post.html?slug=' + encodeURIComponent(featured.slug);
+        featuredLink.textContent = '翻开这篇日记';
+        featuredLink.classList.remove('featured-link-disabled');
+        featuredLink.removeAttribute('aria-disabled');
+
+        if (!recentPosts.length) {
+          empty.hidden = false;
+          empty.textContent = '目前只有首页主封面这一篇。继续写下去，最近几篇列表会自动出现。';
+          return;
+        }
+
+        list.innerHTML = recentPosts.map((post, index) => \`
           <article class="card">
-            <div class="meta">\${post.date || '未设置日期'}</div>
+            <div class="card-topline">
+              <span class="meta">\${post.date || '未设置日期'}</span>
+              <span class="card-index">0\${index + 1}</span>
+            </div>
             <h3><a href="./post.html?slug=\${encodeURIComponent(post.slug)}">\${post.title}</a></h3>
-            <p>\${post.summary || '这篇文章还没有填写摘要。'}</p>
+            <p>\${post.summary || '这篇日记还没有填写摘要。'}</p>
+            <a class="card-link" href="./post.html?slug=\${encodeURIComponent(post.slug)}">阅读全文</a>
           </article>
         \`).join('');
       }
@@ -162,6 +208,7 @@ function buildPostHtml() {
       <nav class="back-nav"><a href="./index.html">返回首页</a></nav>
       <article>
         <header class="post-header">
+          <p class="eyebrow">Daily Entry</p>
           <p id="post-date" class="meta"></p>
           <h1 id="post-title">加载中...</h1>
           <p id="post-summary" class="lead lead-small"></p>
@@ -208,12 +255,17 @@ function buildPostHtml() {
 function buildStyles() {
   return `:root {
   color-scheme: light;
-  --bg: #f6f3ec;
-  --panel: #fffdf8;
-  --line: #d9d1c2;
-  --text: #22201b;
-  --muted: #6b655a;
-  --accent: #9b6b2f;
+  --bg: #efe6d4;
+  --bg-soft: #f7f1e5;
+  --panel: rgba(255, 252, 245, 0.88);
+  --paper: rgba(255, 250, 242, 0.96);
+  --line: #d7c8b0;
+  --line-strong: #beac90;
+  --text: #2b2218;
+  --muted: #716453;
+  --accent: #a16a32;
+  --accent-soft: #d5b486;
+  --shadow: rgba(70, 48, 18, 0.11);
 }
 
 * {
@@ -222,9 +274,24 @@ function buildStyles() {
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top, #fff8ea 0%, var(--bg) 52%);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(255, 247, 228, 0.96) 0%, transparent 36%),
+    linear-gradient(180deg, #f8f0e2 0%, var(--bg) 48%, #e6dac2 100%);
   color: var(--text);
   font-family: Georgia, "Noto Serif SC", serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(126, 95, 54, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(126, 95, 54, 0.03) 1px, transparent 1px);
+  background-size: 100% 28px, 28px 100%;
+  opacity: 0.45;
 }
 
 a {
@@ -232,47 +299,103 @@ a {
 }
 
 .page {
-  width: min(880px, calc(100vw - 32px));
+  position: relative;
+  width: min(980px, calc(100vw - 32px));
   margin: 0 auto;
-  padding: 40px 0 72px;
+  padding: 42px 0 80px;
 }
 
 .hero,
+.featured-card,
 .card,
 .post-header,
 .markdown-body,
-.back-nav {
-  background: rgba(255, 253, 248, 0.88);
+.back-nav,
+.empty {
+  background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 20px;
-  box-shadow: 0 12px 30px rgba(74, 53, 22, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 18px 40px var(--shadow);
 }
 
 .hero,
+.featured-card,
+.post-header,
+.markdown-body,
+.back-nav,
+.empty,
+.card {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero {
+  padding: 30px 30px 26px;
+}
+
+.featured-card,
 .post-header,
 .markdown-body {
-  padding: 28px;
+  padding: 30px;
+}
+
+.hero::after,
+.featured-card::after,
+.post-header::after,
+.markdown-body::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(190, 172, 144, 0.45);
+  border-radius: 18px;
+  pointer-events: none;
+}
+
+.hero-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hero-date {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .hero h1,
 .post-header h1 {
-  margin: 8px 0 12px;
+  margin: 10px 0 12px;
   font-size: clamp(2rem, 6vw, 3.5rem);
-  line-height: 1.08;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
 }
 
 .eyebrow,
 .meta,
-.count {
+.count,
+.featured-kicker,
+.card-index {
   color: var(--muted);
   font-size: 0.95rem;
+}
+
+.eyebrow,
+.featured-kicker {
+  margin: 0;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .lead {
   margin: 0;
   color: var(--muted);
-  font-size: 1.05rem;
-  line-height: 1.8;
+  font-size: 1.06rem;
+  line-height: 1.9;
+  max-width: 58ch;
 }
 
 .lead-small {
@@ -286,18 +409,117 @@ a {
   justify-content: space-between;
 }
 
+.section-head h2 {
+  margin: 0;
+  font-size: 1.55rem;
+}
+
+.section-head-tight {
+  margin-top: 28px;
+}
+
+.featured-shell,
+.recent-shell {
+  margin-top: 18px;
+}
+
+.featured-paper {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 14px;
+  padding: 28px;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 252, 247, 0.75) 0%, rgba(246, 234, 212, 0.86) 100%),
+    linear-gradient(90deg, transparent 0, transparent calc(100% - 62px), rgba(173, 128, 77, 0.06) calc(100% - 62px), rgba(173, 128, 77, 0.06) 100%);
+}
+
+.featured-title,
+.featured-paper h3 {
+  margin: 0;
+}
+
+.featured-paper h3 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  line-height: 1.06;
+}
+
+.featured-summary {
+  margin: 0;
+  max-width: 52ch;
+  color: var(--muted);
+  line-height: 1.9;
+  font-size: 1.03rem;
+}
+
+.featured-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+}
+
+.featured-link,
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.featured-link {
+  padding: 11px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 250, 242, 0.92);
+  box-shadow: 0 8px 20px rgba(97, 68, 33, 0.08);
+}
+
+.featured-link:hover,
+.card-link:hover,
+.back-nav a:hover,
+.card a:hover {
+  color: var(--accent);
+}
+
+.featured-link-disabled {
+  opacity: 0.65;
+  pointer-events: none;
+}
+
 .post-list {
   display: grid;
   gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
 .card {
-  padding: 20px 22px;
+  padding: 22px;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--accent-soft), var(--accent));
+}
+
+.card-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .card h3 {
-  margin: 6px 0 10px;
+  margin: 12px 0 10px;
   font-size: 1.3rem;
+  line-height: 1.3;
 }
 
 .card a {
@@ -305,16 +527,22 @@ a {
   border-bottom: 1px solid transparent;
 }
 
-.card a:hover {
-  color: var(--accent);
-  border-color: currentColor;
-}
-
 .card p,
 .empty,
 .markdown-body {
   color: var(--muted);
   line-height: 1.85;
+}
+
+.card p {
+  min-height: 5.5em;
+}
+
+.card-link {
+  margin-top: 6px;
+  color: var(--text);
+  font-size: 0.96rem;
+  font-weight: 600;
 }
 
 .empty,
@@ -329,14 +557,11 @@ a {
 
 .back-nav a {
   text-decoration: none;
-}
-
-.back-nav a:hover {
-  color: var(--accent);
+  font-weight: 600;
 }
 
 .page-post {
-  width: min(920px, calc(100vw - 32px));
+  width: min(900px, calc(100vw - 32px));
 }
 
 .markdown-body h1,
@@ -344,6 +569,20 @@ a {
 .markdown-body h3 {
   color: var(--text);
   line-height: 1.3;
+}
+
+.markdown-body h2 {
+  margin-top: 2.2em;
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid rgba(190, 172, 144, 0.55);
+}
+
+.markdown-body blockquote {
+  margin: 1.4em 0;
+  padding: 0.8em 1.1em;
+  border-left: 4px solid var(--accent-soft);
+  background: rgba(241, 230, 209, 0.55);
+  border-radius: 0 14px 14px 0;
 }
 
 .markdown-body pre,
@@ -366,16 +605,33 @@ a {
 
 @media (max-width: 640px) {
   .hero,
+  .featured-card,
   .post-header,
   .markdown-body,
   .card,
   .back-nav {
     padding: 18px;
-    border-radius: 16px;
+    border-radius: 18px;
   }
 
   .page {
     padding-top: 20px;
+  }
+
+  .hero-topline,
+  .featured-meta,
+  .section-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .featured-paper {
+    min-height: 250px;
+    padding: 20px;
+  }
+
+  .card p {
+    min-height: auto;
   }
 }`
 }
