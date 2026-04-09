@@ -22,6 +22,28 @@
 3. 图片统一放到 `Assets/`
 4. 每篇文章都保留 frontmatter，后续迁移更省事
 
+## 一键发布
+
+日常更新网页时，可以直接运行：
+
+```powershell
+cd F:\Projects\Blog
+.\publish-blog.ps1
+```
+
+如果你想自定义提交信息：
+
+```powershell
+cd F:\Projects\Blog
+.\publish-blog.ps1 -Message "docs(blog): 发布今日日记"
+```
+
+脚本会自动执行：
+
+1. `git add .`
+2. `git commit -m ...`
+3. `git push origin main`
+
 ## 建议命名
 
 - 草稿：`2026-04-09-主题草稿.md`
@@ -53,4 +75,3 @@ slug: "article-slug"
 1. 保留 `Posts/` 里的 Markdown
 2. 调整 frontmatter 字段
 3. 把 `Assets/` 接到静态资源目录
-
