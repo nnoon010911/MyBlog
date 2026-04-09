@@ -184,7 +184,7 @@ function buildPostHtml() {
   <body>
     <main class="page page-post">
       <nav class="back-nav"><a href="./index.html">返回首页</a></nav>
-      <article>
+      <article class="post-shell">
         <header class="post-header">
           <p class="eyebrow">Daily Entry</p>
           <p id="post-date" class="meta"></p>
@@ -283,6 +283,11 @@ a {
   padding: 42px 0 80px;
 }
 
+.post-shell {
+  display: grid;
+  gap: 18px;
+}
+
 .hero,
 .card,
 .post-header,
@@ -307,6 +312,10 @@ a {
 
 .hero {
   padding: 30px;
+}
+
+.post-header {
+  padding: 26px 30px 24px;
 }
 
 .hero::after,
@@ -341,6 +350,11 @@ a {
   font-size: clamp(2rem, 6vw, 3.5rem);
   line-height: 1.04;
   letter-spacing: -0.03em;
+}
+
+.post-header .meta {
+  display: block;
+  margin-top: 10px;
 }
 
 .eyebrow,
@@ -470,11 +484,25 @@ a {
   width: min(900px, calc(100vw - 32px));
 }
 
+.page-post .lead {
+  max-width: 46ch;
+}
+
+.markdown-body {
+  padding: 30px 32px 34px;
+  background: var(--paper);
+  color: var(--text);
+}
+
 .markdown-body h1,
 .markdown-body h2,
 .markdown-body h3 {
   color: var(--text);
   line-height: 1.3;
+}
+
+.markdown-body h1 {
+  margin-bottom: 0.8em;
 }
 
 .markdown-body > :first-child {
@@ -485,6 +513,11 @@ a {
 .markdown-body ul,
 .markdown-body ol {
   margin: 1em 0;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 1.35em;
 }
 
 .markdown-body li + li {
@@ -545,6 +578,10 @@ a {
 
   .card p {
     min-height: auto;
+  }
+
+  .post-shell {
+    gap: 14px;
   }
 }`
 }
