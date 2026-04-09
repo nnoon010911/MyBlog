@@ -104,73 +104,35 @@ function buildIndexHtml() {
           <p class="eyebrow">MyBlog</p>
           <p class="hero-date">Daily Notes Archive</p>
         </div>
-        <h1>给未来回看的手账封面</h1>
-        <p class="lead">每天写一点，慢慢把日子叠成一本能翻阅的册子。这里默认只展示 <code>Posts/</code> 中已经准备公开的正式日记。</p>
+        <h1>把日子一页页翻给自己看</h1>
+        <p class="lead">这里会按日期倒序列出所有已经公开的日记。点开任意一篇，就能看到当天完整的记录和想法。</p>
       </header>
-
-      <section class="featured-shell">
-        <div class="section-head section-head-tight">
-          <h2>最新日记</h2>
-          <span class="count" id="featured-label">封面</span>
-        </div>
-        <article id="featured-card" class="featured-card">
-          <div class="featured-paper">
-            <p id="featured-kicker" class="featured-kicker">准备开始</p>
-            <h3 id="featured-title">今天还没有公开日记</h3>
-            <p id="featured-summary" class="featured-summary">等你把一篇日记放进 Posts 目录后，这里会自动变成首页主封面。</p>
-            <div class="featured-meta">
-              <span id="featured-date">写作模式已就绪</span>
-              <a id="featured-link" class="featured-link featured-link-disabled" href="./index.html" aria-disabled="true">等待第一篇</a>
-            </div>
-          </div>
-        </article>
-      </section>
 
       <section class="recent-shell">
         <div class="section-head">
-          <h2>最近几篇</h2>
+          <h2>全部日记</h2>
           <span id="post-count" class="count">0 篇</span>
         </div>
         <div id="post-list" class="post-list"></div>
-        <div id="empty-state" class="empty" hidden>还没有可展示的最近日记。你可以继续在本地写 Drafts，准备好后再放入 Posts。</div>
+        <div id="empty-state" class="empty" hidden>还没有可展示的日记。你可以继续在本地写 Drafts，准备好后再放入 Posts。</div>
       </section>
     </main>
     <script>
       async function main() {
         const response = await fetch('./posts.json');
         const posts = await response.json();
-        const featured = posts[0];
-        const recentPosts = posts.slice(1, 7);
         const count = document.getElementById('post-count');
         const list = document.getElementById('post-list');
         const empty = document.getElementById('empty-state');
-        const featuredLabel = document.getElementById('featured-label');
 
         count.textContent = posts.length + ' 篇';
 
-        if (!featured) {
+        if (!posts.length) {
           empty.hidden = false;
           return;
         }
 
-        featuredLabel.textContent = '最新一篇';
-        document.getElementById('featured-kicker').textContent = 'Latest Entry';
-        document.getElementById('featured-title').textContent = featured.title;
-        document.getElementById('featured-summary').textContent = featured.summary || '这篇日记还没有填写摘要。';
-        document.getElementById('featured-date').textContent = featured.date || '未设置日期';
-        const featuredLink = document.getElementById('featured-link');
-        featuredLink.href = './post.html?slug=' + encodeURIComponent(featured.slug);
-        featuredLink.textContent = '翻开这篇日记';
-        featuredLink.classList.remove('featured-link-disabled');
-        featuredLink.removeAttribute('aria-disabled');
-
-        if (!recentPosts.length) {
-          empty.hidden = false;
-          empty.textContent = '目前只有首页主封面这一篇。继续写下去，最近几篇列表会自动出现。';
-          return;
-        }
-
-        list.innerHTML = recentPosts.map((post, index) => \`
+        list.innerHTML = posts.map((post, index) => \`
           <article class="card">
             <div class="card-topline">
               <span class="meta">\${post.date || '未设置日期'}</span>
@@ -306,7 +268,6 @@ a {
 }
 
 .hero,
-.featured-card,
 .card,
 .post-header,
 .markdown-body,
@@ -319,7 +280,6 @@ a {
 }
 
 .hero,
-.featured-card,
 .post-header,
 .markdown-body,
 .back-nav,
@@ -330,17 +290,10 @@ a {
 }
 
 .hero {
-  padding: 30px 30px 26px;
-}
-
-.featured-card,
-.post-header,
-.markdown-body {
   padding: 30px;
 }
 
 .hero::after,
-.featured-card::after,
 .post-header::after,
 .markdown-body::after {
   content: "";
@@ -418,77 +371,14 @@ a {
   margin-top: 28px;
 }
 
-.featured-shell,
 .recent-shell {
   margin-top: 18px;
 }
 
-.featured-paper {
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 14px;
-  padding: 28px;
-  border-radius: 20px;
-  background:
-    linear-gradient(180deg, rgba(255, 252, 247, 0.75) 0%, rgba(246, 234, 212, 0.86) 100%),
-    linear-gradient(90deg, transparent 0, transparent calc(100% - 62px), rgba(173, 128, 77, 0.06) calc(100% - 62px), rgba(173, 128, 77, 0.06) 100%);
-}
-
-.featured-title,
-.featured-paper h3 {
-  margin: 0;
-}
-
-.featured-paper h3 {
-  font-size: clamp(2rem, 5vw, 3.2rem);
-  line-height: 1.06;
-}
-
-.featured-summary {
-  margin: 0;
-  max-width: 52ch;
-  color: var(--muted);
-  line-height: 1.9;
-  font-size: 1.03rem;
-}
-
-.featured-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding-top: 8px;
-}
-
-.featured-link,
-.card-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
-}
-
-.featured-link {
-  padding: 11px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--line-strong);
-  background: rgba(255, 250, 242, 0.92);
-  box-shadow: 0 8px 20px rgba(97, 68, 33, 0.08);
-}
-
-.featured-link:hover,
 .card-link:hover,
 .back-nav a:hover,
 .card a:hover {
   color: var(--accent);
-}
-
-.featured-link-disabled {
-  opacity: 0.65;
-  pointer-events: none;
 }
 
 .post-list {
@@ -605,7 +495,6 @@ a {
 
 @media (max-width: 640px) {
   .hero,
-  .featured-card,
   .post-header,
   .markdown-body,
   .card,
@@ -619,15 +508,9 @@ a {
   }
 
   .hero-topline,
-  .featured-meta,
   .section-head {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .featured-paper {
-    min-height: 250px;
-    padding: 20px;
   }
 
   .card p {
