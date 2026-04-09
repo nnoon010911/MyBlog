@@ -44,6 +44,10 @@ cd F:\Projects\Blog
 2. `git commit -m ...`
 3. `git push origin main`
 
+如果你懒得打开终端，也可以直接双击：
+
+- `publish-blog.bat`
+
 ## 建议命名
 
 - 草稿：`2026-04-09-主题草稿.md`
