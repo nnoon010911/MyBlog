@@ -179,7 +179,7 @@ function buildPostHtml() {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>文章 | MyBlog</title>
     <link rel="stylesheet" href="./styles.css" />
-    <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </head>
   <body>
     <main class="page page-post">
@@ -253,6 +253,7 @@ function buildStyles() {
 body {
   margin: 0;
   min-height: 100vh;
+  position: relative;
   background:
     radial-gradient(circle at top, rgba(255, 247, 228, 0.96) 0%, transparent 36%),
     linear-gradient(180deg, #f8f0e2 0%, var(--bg) 48%, #e6dac2 100%);
@@ -264,12 +265,13 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
+  z-index: 0;
   pointer-events: none;
   background-image:
     linear-gradient(rgba(126, 95, 54, 0.035) 1px, transparent 1px),
     linear-gradient(90deg, rgba(126, 95, 54, 0.03) 1px, transparent 1px);
   background-size: 100% 28px, 28px 100%;
-  opacity: 0.45;
+  opacity: 0.16;
 }
 
 a {
@@ -278,6 +280,7 @@ a {
 
 .page {
   position: relative;
+  z-index: 1;
   width: min(980px, calc(100vw - 32px));
   margin: 0 auto;
   padding: 42px 0 80px;
@@ -315,7 +318,7 @@ a {
 }
 
 .post-header {
-  padding: 26px 30px 24px;
+  padding: 32px 30px 24px;
 }
 
 .hero::after,
@@ -324,9 +327,20 @@ a {
   content: "";
   position: absolute;
   inset: 12px;
+  z-index: 0;
   border: 1px solid rgba(190, 172, 144, 0.45);
   border-radius: 18px;
   pointer-events: none;
+}
+
+.hero > *,
+.post-header > *,
+.markdown-body > *,
+.back-nav > *,
+.empty > *,
+.card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .hero-topline {
@@ -369,6 +383,7 @@ a {
 .eyebrow,
 .featured-kicker {
   margin: 0;
+  line-height: 1.45;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
