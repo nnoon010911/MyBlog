@@ -26,6 +26,22 @@ function toSlug(input) {
     .replace(/^-+|-+$/g, '')
 }
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function normalizePostContent(content, title) {
+  const normalizedContent = content.trim()
+  const normalizedTitle = title.trim()
+
+  if (!normalizedContent || !normalizedTitle) {
+    return normalizedContent
+  }
+
+  const headingPattern = new RegExp(`^#\\s+${escapeRegExp(normalizedTitle)}\\s*\\n+`, 'u')
+  return normalizedContent.replace(headingPattern, '').trim()
+}
+
 function parseFrontmatter(raw) {
   const normalized = normalizeNewlines(raw)
   const match = normalized.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/)
@@ -80,7 +96,7 @@ function collectPosts() {
         date,
         summary,
         draft,
-        content: content.trim(),
+        content: normalizePostContent(content, title),
       }
     })
     .filter((post) => !post.draft)
@@ -459,6 +475,20 @@ a {
 .markdown-body h3 {
   color: var(--text);
   line-height: 1.3;
+}
+
+.markdown-body > :first-child {
+  margin-top: 0;
+}
+
+.markdown-body p,
+.markdown-body ul,
+.markdown-body ol {
+  margin: 1em 0;
+}
+
+.markdown-body li + li {
+  margin-top: 0.45em;
 }
 
 .markdown-body h2 {
